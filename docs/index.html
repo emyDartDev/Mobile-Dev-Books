@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobile App Development Books — A Card Catalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wood-dark:   #241a13;
+    --wood-mid:    #2f2318;
+    --wood-panel:  #382a1c;
+    --wood-grain:  #1c140e;
+    --brass:       #b6905b;
+    --brass-bright:#d9b579;
+    --card:        #f1e6cc;
+    --card-shadow: #d9c9a2;
+    --ink:         #241a12;
+    --ink-soft:    #4a3c2c;
+    --stamp-red:   #8c3624;
+    --rule:        #c9b896;
+    --focus:       #6fb8b0;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at top, rgba(255,255,255,0.03), transparent 60%),
+      repeating-linear-gradient(90deg, var(--wood-dark) 0px, var(--wood-mid) 2px, var(--wood-dark) 4px),
+      var(--wood-dark);
+    color:var(--card);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{color:inherit;}
+  ::selection{background:var(--brass); color:var(--wood-dark);}
+
+  :focus-visible{
+    outline:2px solid var(--focus);
+    outline-offset:3px;
+  }
+
+  /* ============ layout shell ============ */
+  .wrap{
+    max-width:920px;
+    margin:0 auto;
+    padding:0 24px 96px;
+  }
+
+  /* ============ header / drawer label ============ */
+  header{
+    padding:72px 0 48px;
+    text-align:center;
+  }
+
+  .plate{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    background:linear-gradient(180deg, var(--brass-bright), var(--brass));
+    color:var(--wood-grain);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    padding:6px 16px;
+    border-radius:2px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.4) inset,
+      0 3px 6px rgba(0,0,0,0.4);
+    margin-bottom:28px;
+  }
+  .plate .dot{width:5px;height:5px;border-radius:50%;background:var(--wood-grain);opacity:.5;}
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(2.4rem, 5.4vw, 4rem);
+    line-height:1.05;
+    margin:0 0 18px;
+    color:#f6ecd6;
+    letter-spacing:-0.01em;
+  }
+  h1 em{
+    font-style:italic;
+    font-weight:500;
+    color:var(--brass-bright);
+  }
+
+  .subtitle{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    color:#c9b28c;
+    max-width:520px;
+    margin:0 auto;
+    line-height:1.7;
+  }
+
+  .card-count{
+    margin-top:34px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--brass);
+    letter-spacing:.08em;
+  }
+  .card-count::before, .card-count::after{
+    content:"·";
+    margin:0 10px;
+    color:var(--brass);
+  }
+
+  /* ============ drawer ============ */
+  .drawer{
+    background:var(--wood-panel);
+    border-radius:6px;
+    padding:28px 22px 34px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.05) inset,
+      0 20px 40px rgba(0,0,0,0.45),
+      0 2px 0 var(--wood-grain);
+    position:relative;
+  }
+
+  .drawer::before{
+    content:"";
+    position:absolute;
+    top:-9px; left:50%;
+    transform:translateX(-50%);
+    width:64px; height:18px;
+    background:linear-gradient(180deg, var(--brass-bright), var(--brass));
+    border-radius:9px;
+    box-shadow:0 3px 6px rgba(0,0,0,0.4);
+  }
+
+  .drawer-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:#a08a63;
+    text-align:center;
+    margin-bottom:22px;
+  }
+
+  /* ============ index card grid ============ */
+  .catalog{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(230px, 1fr));
+    gap:14px;
+  }
+
+  .card{
+    background:
+      linear-gradient(var(--card), var(--card)) padding-box,
+      repeating-linear-gradient(var(--card) 0 27px, var(--rule) 27px 28px) padding-box;
+    background-color:var(--card);
+    color:var(--ink);
+    padding:16px 16px 14px;
+    border-radius:1px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.5) inset,
+      2px 4px 0 var(--card-shadow),
+      2px 4px 8px rgba(0,0,0,0.35);
+    position:relative;
+    opacity:0;
+    transform:translateY(10px);
+    animation:rise .5s ease forwards;
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .card:hover, .card:focus-within{
+    transform:translateY(3px) rotate(-0.4deg);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.5) inset,
+      1px 2px 0 var(--card-shadow),
+      3px 6px 14px rgba(0,0,0,0.45);
+  }
+
+  .card .callno{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:.05em;
+    color:var(--stamp-red);
+    font-weight:600;
+  }
+
+  .card h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-style:italic;
+    font-size:1.2rem;
+    margin:6px 0 8px;
+    line-height:1.2;
+  }
+
+  .card .leader{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    color:var(--ink-soft);
+    display:flex;
+    justify-content:space-between;
+    border-top:1px dashed var(--rule);
+    padding-top:8px;
+    margin-top:4px;
+  }
+
+  @keyframes rise{
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  /* ============ purpose note ============ */
+  .note{
+    margin-top:56px;
+    display:grid;
+    grid-template-columns:auto 1fr;
+    gap:20px;
+    align-items:start;
+  }
+  .note .tab{
+    writing-mode:vertical-rl;
+    text-orientation:mixed;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--wood-grain);
+    background:var(--brass-bright);
+    padding:14px 6px;
+    border-radius:2px;
+    box-shadow:2px 2px 6px rgba(0,0,0,0.35);
+  }
+  .note .content{
+    background:var(--card);
+    color:var(--ink);
+    padding:22px 24px;
+    border-radius:1px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.5) inset,
+      2px 4px 10px rgba(0,0,0,0.35);
+  }
+  .note h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:1.3rem;
+    margin:0 0 10px;
+  }
+  .note p{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:14.5px;
+    line-height:1.65;
+    margin:0;
+    color:var(--ink-soft);
+  }
+
+  /* ============ disclaimer stamp ============ */
+  .stamp-wrap{
+    margin-top:40px;
+    display:flex;
+    justify-content:center;
+  }
+  .stamp{
+    border:2px solid var(--stamp-red);
+    color:var(--stamp-red);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    letter-spacing:.05em;
+    line-height:1.6;
+    padding:14px 22px;
+    border-radius:3px;
+    transform:rotate(-2deg);
+    text-align:center;
+    max-width:480px;
+    opacity:.85;
+  }
+  .stamp strong{
+    display:block;
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+
+  /* ============ footer ============ */
+  footer{
+    margin-top:56px;
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:.1em;
+    color:#8a7654;
+  }
+
+  @media (max-width:480px){
+    .note{grid-template-columns:1fr;}
+    .note .tab{
+      writing-mode:horizontal-tb;
+      width:fit-content;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .card{animation:none; opacity:1; transform:none;}
+    html{scroll-behavior:auto;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="plate"><span class="dot"></span>Drawer 005 — Computer Science<span class="dot"></span></div>
+    <h1>Mobile App<br><em>Development</em> Books</h1>
+    <p class="subtitle">A personal card catalog of books and resources on mobile application development and software engineering — kept for learning, and for finding a thing again later.</p>
+    <div class="card-count">12 subjects catalogued</div>
+  </header>
+
+  <section class="drawer" aria-label="Subject card catalog">
+    <div class="drawer-label">Subject Index — Flip Through</div>
+    <div class="catalog" id="catalog"></div>
+  </section>
+
+  <section class="note">
+    <div class="tab">Purpose</div>
+    <div class="content">
+      <h2>Why this drawer exists</h2>
+      <p>This repository is a centralized library for books that support learning and building modern, scalable mobile applications — from architecture and design patterns to testing, performance, and the version control that ties it all together. It exists so the next question ("wait, which book covered that?") has a shelf to go find.</p>
+    </div>
+  </section>
+
+  <div class="stamp-wrap">
+    <div class="stamp">
+      <strong>Ex Libris — Personal Archive</strong>
+      All rights belong to their respective authors and publishers.<br>
+      Intended for personal learning and archival purposes only.
+    </div>
+  </div>
+
+  <footer>Catalogued for personal use · last shelved 2026</footer>
+
+</div>
+
+<script>
+  const topics = [
+    { name: "Flutter", code: "005.133 FLU", note: "cross-platform UI" },
+    { name: "Dart", code: "005.133 DAR", note: "the language" },
+    { name: "Software Engineering", code: "005.1 SWE", note: "the discipline" },
+    { name: "Clean Architecture", code: "005.12 CLA", note: "layers & boundaries" },
+    { name: "Domain-Driven Design", code: "005.117 DDD", note: "bounded contexts" },
+    { name: "Design Patterns", code: "005.12 PAT", note: "reusable solutions" },
+    { name: "Mobile App Architecture", code: "004.165 MOB", note: "structuring apps" },
+    { name: "UI / UX", code: "005.437 UIX", note: "interface & experience" },
+    { name: "Testing", code: "005.14 TST", note: "proving it works" },
+    { name: "Performance Optimization", code: "005.11 PRF", note: "making it fast" },
+    { name: "System Design", code: "004.2 SYS", note: "designing at scale" },
+    { name: "Git & Version Control", code: "005.446 GIT", note: "history & collaboration" },
+  ];
+
+  const catalog = document.getElementById('catalog');
+  topics.forEach((t, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.animationDelay = (i * 45) + 'ms';
+    card.tabIndex = 0;
+    card.innerHTML = `
+      <div class="callno">${t.code}</div>
+      <h3>${t.name}</h3>
+      <div class="leader"><span>see also</span><span>${t.note}</span></div>
+    `;
+    catalog.appendChild(card);
+  });
+</script>
+</body>
+</html>
